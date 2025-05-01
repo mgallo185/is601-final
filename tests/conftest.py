@@ -15,7 +15,7 @@ Fixtures:
 
 # Standard library imports
 from builtins import Exception, range, str
-from datetime import timedelta
+from datetime import datetime, timedelta
 from unittest.mock import AsyncMock, patch
 from uuid import uuid4
 
@@ -238,3 +238,29 @@ def email_service():
         mock_service.send_verification_email.return_value = None
         mock_service.send_user_email.return_value = None
         return mock_service
+@pytest.fixture
+def unique_user_data():
+    return {
+        "nickname": f"user_{uuid.uuid4().hex[:8]}",
+        "email": f"user_{uuid.uuid4().hex[:8]}@example.com",
+        "first_name": "Test",
+        "last_name": "User",
+        "role": "AUTHENTICATED"
+    }
+
+@pytest.fixture
+async def test_user(db_session):
+    user = User(
+        id=uuid.uuid4(),
+        nickname="test_user",
+        email="testuser@example.com",
+        role=UserRole.AUTHENTICATED,
+        created_at=datetime.utcnow(),
+        updated_at=datetime.utcnow(),
+    )
+    hashed_password = hash_password("password123")
+    user.hashed_password = hashed_password 
+    db_session.add(user)
+    await db_session.commit()
+    await db_session.refresh(user)
+    return user
