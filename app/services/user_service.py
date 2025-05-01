@@ -89,9 +89,32 @@ class UserService:
             # validated_data = UserUpdate(**update_data).dict(exclude_unset=True)
             validated_data = UserUpdate(**update_data).model_dump(exclude_unset=True)
 
-            if 'password' in validated_data:
-                validated_data['hashed_password'] = hash_password(validated_data.pop('password'))
-            query = update(User).where(User.id == user_id).values(**validated_data).execution_options(synchronize_session="fetch")
+
+            if "email" in validated_data:
+                existing_user = await cls.get_by_email(session, validated_data["email"])
+                if existing_user and existing_user.id != user_id:
+                    logger.error("User with given email already exists.")
+                    return None
+
+            # Check nickname uniqueness excluding the current user
+            if "nickname" in validated_data:
+                existing_user_nickname = await cls.get_by_nickname(session, validated_data["nickname"])
+                if existing_user_nickname and existing_user_nickname.id != user_id:
+                    logger.error("User with given nickname already exists.")
+                    return None  
+
+            # Update password if provided
+            if "password" in validated_data:
+                validated_data["hashed_password"] = hash_password(validated_data.pop("password"))
+
+            # Perform the update
+            query = (
+                update(User)
+                .where(User.id == user_id)
+                .values(**validated_data)
+                .execution_options(synchronize_session="fetch")
+            )
+
             await cls._execute_query(session, query)
             updated_user = await cls.get_by_id(session, user_id)
             if updated_user:
@@ -187,7 +210,8 @@ class UserService:
         if user and user.verification_token == token:
             user.email_verified = True
             user.verification_token = None  # Clear the token once used
-            user.role = UserRole.AUTHENTICATED
+            if user.role == UserRole.ANONYMOUS:
+                user.role = UserRole.AUTHENTICATED  
             session.add(user)
             await session.commit()
             return True
