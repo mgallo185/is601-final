@@ -4,6 +4,7 @@ from typing import Optional, List
 from datetime import datetime
 from enum import Enum
 import uuid
+from urllib.parse import urlparse
 import re
 from app.models.user_model import UserRole
 from app.utils.nickname_gen import generate_nickname
@@ -17,6 +18,16 @@ def validate_url(url: Optional[str]) -> Optional[str]:
         raise ValueError('Invalid URL format')
     return url
 
+def validate_profile_picture_url(cls, url):
+    if url is None:
+        return url  # If the URL is optional, allow None values
+    parsed_url = urlparse(url)
+    if not parsed_url.scheme or parsed_url.scheme not in {"http", "https"}:
+        raise ValueError("URL must start with http:// or https://")
+    if not re.search(r"\.(jpg|jpeg|png)$", parsed_url.path):
+        raise ValueError("Should have a valid image file (e.g., .jpg, .jpeg, .png)")
+    return url
+
 class UserBase(BaseModel):
     email: EmailStr = Field(..., example="john.doe@example.com")
     nickname: Optional[str] = Field(None, min_length=3, pattern=r'^[\w-]+$', example=generate_nickname())
@@ -28,8 +39,8 @@ class UserBase(BaseModel):
     github_profile_url: Optional[str] = Field(None, example="https://github.com/johndoe")
     role: UserRole
 
-    _validate_urls = validator('profile_picture_url', 'linkedin_profile_url', 'github_profile_url', pre=True, allow_reuse=True)(validate_url)
- 
+    _validate_urls = validator('linkedin_profile_url', 'github_profile_url', pre=True, allow_reuse=True)(validate_url)
+    _validate_profile_picture_url = validator('profile_picture_url',pre=True, allow_reuse=True)(validate_profile_picture_url)
     class Config:
         from_attributes = True
 
