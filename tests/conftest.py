@@ -1,7 +1,22 @@
+"""
+File: test_database_operations.py
+
+Overview:
+This Python test file utilizes pytest to manage database states and HTTP clients for testing a web application built with FastAPI and SQLAlchemy. It includes detailed fixtures to mock the testing environment, ensuring each test is run in isolation with a consistent setup.
+
+Fixtures:
+- `async_client`: Manages an asynchronous HTTP client for testing interactions with the FastAPI application.
+- `db_session`: Handles database transactions to ensure a clean database state for each test.
+- User fixtures (`user`, `locked_user`, `verified_user`, etc.): Set up various user states to test different behaviors under diverse conditions.
+- `token`: Generates an authentication token for testing secured endpoints.
+- `initialize_database`: Prepares the database at the session start.
+- `setup_database`: Sets up and tears down the database before and after each test.
+"""
+
 # Standard library imports
 from builtins import Exception, range, str
 from datetime import datetime, timedelta
-from unittest.mock import AsyncMock, patch, MagicMock
+from unittest.mock import AsyncMock, patch
 from uuid import uuid4
 
 # Third-party imports
@@ -12,24 +27,7 @@ from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession
 from sqlalchemy.orm import sessionmaker, scoped_session
 from faker import Faker
 
-# First, mock MinIO before any other imports to prevent connection attempts
-import sys
-# Create the minio_client mock module
-minio_mock = MagicMock()
-minio_mock.bucket_exists.return_value = True
-minio_mock.make_bucket.return_value = None
-minio_mock.put_object.return_value = None
-minio_mock.get_object.return_value = MagicMock()
-minio_mock.remove_object.return_value = None
-
-# Apply patch to sys.modules to ensure minio_client is mocked before it's imported
-sys.modules['app.utils.minio_client'] = MagicMock()
-sys.modules['app.utils.minio_client'].minio_client = minio_mock
-sys.modules['app.utils.minio_client'].upload = MagicMock()
-sys.modules['app.utils.minio_client'].allowed_file = MagicMock(return_value=True)
-sys.modules['app.utils.minio_client'].MAX_FILE_SIZE = 10 * 1024 * 1024  # 10MB
-
-# NOW import application-specific imports after mocking is in place
+# Application-specific imports
 from app.main import app
 from app.database import Base, Database
 from app.models.user_model import User, UserRole
@@ -46,14 +44,6 @@ TEST_DATABASE_URL = settings.database_url.replace("postgresql://", "postgresql+a
 engine = create_async_engine(TEST_DATABASE_URL, echo=settings.debug)
 AsyncTestingSessionLocal = sessionmaker(engine, class_=AsyncSession, expire_on_commit=False)
 AsyncSessionScoped = scoped_session(AsyncTestingSessionLocal)
-
-
-# Mock MinIO client fixture (now redundant but kept for backward compatibility)
-@pytest.fixture(scope="session", autouse=True)
-def mock_minio_client():
-    """Mock MinIO client to avoid connection errors during tests."""
-    # Already mocked at module level
-    return minio_mock
 
 
 @pytest.fixture
@@ -237,14 +227,22 @@ def user_token(user):
     token_data = {"sub": str(user.id), "role": user.role.name}
     return create_access_token(data=token_data, expires_delta=timedelta(minutes=30))
 
-# Fix the duplicate fixture issue by removing one of the email_service fixtures
-# The previous one was already defined above
-
+@pytest.fixture
+def email_service():
+    if settings.send_real_mail == 'true':
+        # Return the real email service when specifically testing email functionality
+        return EmailService()
+    else:
+        # Otherwise, use a mock to prevent actual email sending
+        mock_service = AsyncMock(spec=EmailService)
+        mock_service.send_verification_email.return_value = None
+        mock_service.send_user_email.return_value = None
+        return mock_service
 @pytest.fixture
 def unique_user_data():
     return {
-        "nickname": f"user_{uuid4().hex[:8]}",
-        "email": f"user_{uuid4().hex[:8]}@example.com",
+        "nickname": f"user_{uuid.uuid4().hex[:8]}",
+        "email": f"user_{uuid.uuid4().hex[:8]}@example.com",
         "first_name": "Test",
         "last_name": "User",
         "role": "AUTHENTICATED"
@@ -253,7 +251,7 @@ def unique_user_data():
 @pytest.fixture
 async def test_user(db_session):
     user = User(
-        id=uuid4(),
+        id=uuid.uuid4(),
         nickname="test_user",
         email="testuser@example.com",
         role=UserRole.AUTHENTICATED,

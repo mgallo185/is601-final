@@ -11,6 +11,26 @@ from minio.error import S3Error
 from app.utils.minio_client import upload, allowed_file, resize_image
 
 # Fixtures
+
+@pytest.fixture
+def mock_minio_client():
+    """Fixture to mock the Minio client."""
+    with patch("app.utils.minio_client.minio_client", autospec=True) as mock_client:
+        yield mock_client
+
+
+@pytest.fixture
+def mock_settings():
+    """Fixture to mock the settings."""
+    return {
+        "MINIO_ENDPOINT": "minio:9000",
+        "MINIO_BUCKET_NAME": "bucket_name",
+        "MINIO_ACCESS_KEY": "test-access-key",
+        "MINIO_SECRET_KEY": "test-secret-key",
+        "MINIO_USE_SSL": False,
+    }
+    
+
 @pytest.fixture
 def test_user_id():
     """Generate a test user ID"""
