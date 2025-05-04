@@ -1,22 +1,7 @@
-"""
-File: test_database_operations.py
-
-Overview:
-This Python test file utilizes pytest to manage database states and HTTP clients for testing a web application built with FastAPI and SQLAlchemy. It includes detailed fixtures to mock the testing environment, ensuring each test is run in isolation with a consistent setup.
-
-Fixtures:
-- `async_client`: Manages an asynchronous HTTP client for testing interactions with the FastAPI application.
-- `db_session`: Handles database transactions to ensure a clean database state for each test.
-- User fixtures (`user`, `locked_user`, `verified_user`, etc.): Set up various user states to test different behaviors under diverse conditions.
-- `token`: Generates an authentication token for testing secured endpoints.
-- `initialize_database`: Prepares the database at the session start.
-- `setup_database`: Sets up and tears down the database before and after each test.
-"""
-
 # Standard library imports
 from builtins import Exception, range, str
 from datetime import datetime, timedelta
-from unittest.mock import AsyncMock, patch
+from unittest.mock import AsyncMock, patch, MagicMock
 from uuid import uuid4
 
 # Third-party imports
@@ -44,6 +29,20 @@ TEST_DATABASE_URL = settings.database_url.replace("postgresql://", "postgresql+a
 engine = create_async_engine(TEST_DATABASE_URL, echo=settings.debug)
 AsyncTestingSessionLocal = sessionmaker(engine, class_=AsyncSession, expire_on_commit=False)
 AsyncSessionScoped = scoped_session(AsyncTestingSessionLocal)
+
+
+# Mock MinIO client to avoid connection errors during tests
+@pytest.fixture(scope="session", autouse=True)
+def mock_minio_client():
+    """Mock MinIO client to avoid connection errors during tests."""
+    with patch('app.utils.minio_client.minio_client') as mock_client:
+        # Configure the mock to return appropriate values
+        mock_client.bucket_exists.return_value = True
+        mock_client.make_bucket.return_value = None
+        mock_client.put_object.return_value = None
+        mock_client.get_object.return_value = MagicMock()
+        mock_client.remove_object.return_value = None
+        yield mock_client
 
 
 @pytest.fixture
@@ -238,11 +237,12 @@ def email_service():
         mock_service.send_verification_email.return_value = None
         mock_service.send_user_email.return_value = None
         return mock_service
+
 @pytest.fixture
 def unique_user_data():
     return {
-        "nickname": f"user_{uuid.uuid4().hex[:8]}",
-        "email": f"user_{uuid.uuid4().hex[:8]}@example.com",
+        "nickname": f"user_{uuid4().hex[:8]}",
+        "email": f"user_{uuid4().hex[:8]}@example.com",
         "first_name": "Test",
         "last_name": "User",
         "role": "AUTHENTICATED"
@@ -251,7 +251,7 @@ def unique_user_data():
 @pytest.fixture
 async def test_user(db_session):
     user = User(
-        id=uuid.uuid4(),
+        id=uuid4(),
         nickname="test_user",
         email="testuser@example.com",
         role=UserRole.AUTHENTICATED,
