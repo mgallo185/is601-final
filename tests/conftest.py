@@ -12,7 +12,24 @@ from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession
 from sqlalchemy.orm import sessionmaker, scoped_session
 from faker import Faker
 
-# Application-specific imports
+# First, mock MinIO before any other imports to prevent connection attempts
+import sys
+# Create the minio_client mock module
+minio_mock = MagicMock()
+minio_mock.bucket_exists.return_value = True
+minio_mock.make_bucket.return_value = None
+minio_mock.put_object.return_value = None
+minio_mock.get_object.return_value = MagicMock()
+minio_mock.remove_object.return_value = None
+
+# Apply patch to sys.modules to ensure minio_client is mocked before it's imported
+sys.modules['app.utils.minio_client'] = MagicMock()
+sys.modules['app.utils.minio_client'].minio_client = minio_mock
+sys.modules['app.utils.minio_client'].upload = MagicMock()
+sys.modules['app.utils.minio_client'].allowed_file = MagicMock(return_value=True)
+sys.modules['app.utils.minio_client'].MAX_FILE_SIZE = 10 * 1024 * 1024  # 10MB
+
+# NOW import application-specific imports after mocking is in place
 from app.main import app
 from app.database import Base, Database
 from app.models.user_model import User, UserRole
@@ -31,18 +48,12 @@ AsyncTestingSessionLocal = sessionmaker(engine, class_=AsyncSession, expire_on_c
 AsyncSessionScoped = scoped_session(AsyncTestingSessionLocal)
 
 
-# Mock MinIO client to avoid connection errors during tests
+# Mock MinIO client fixture (now redundant but kept for backward compatibility)
 @pytest.fixture(scope="session", autouse=True)
 def mock_minio_client():
     """Mock MinIO client to avoid connection errors during tests."""
-    with patch('app.utils.minio_client.minio_client') as mock_client:
-        # Configure the mock to return appropriate values
-        mock_client.bucket_exists.return_value = True
-        mock_client.make_bucket.return_value = None
-        mock_client.put_object.return_value = None
-        mock_client.get_object.return_value = MagicMock()
-        mock_client.remove_object.return_value = None
-        yield mock_client
+    # Already mocked at module level
+    return minio_mock
 
 
 @pytest.fixture
@@ -226,17 +237,8 @@ def user_token(user):
     token_data = {"sub": str(user.id), "role": user.role.name}
     return create_access_token(data=token_data, expires_delta=timedelta(minutes=30))
 
-@pytest.fixture
-def email_service():
-    if settings.send_real_mail == 'true':
-        # Return the real email service when specifically testing email functionality
-        return EmailService()
-    else:
-        # Otherwise, use a mock to prevent actual email sending
-        mock_service = AsyncMock(spec=EmailService)
-        mock_service.send_verification_email.return_value = None
-        mock_service.send_user_email.return_value = None
-        return mock_service
+# Fix the duplicate fixture issue by removing one of the email_service fixtures
+# The previous one was already defined above
 
 @pytest.fixture
 def unique_user_data():
