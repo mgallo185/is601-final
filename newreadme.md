@@ -10,12 +10,18 @@ https://hub.docker.com/r/mgallo185/is601-final
 
 Screenshots:
 
-Passes all of Pytest: <img width="470" alt="image" src="https://github.com/user-attachments/assets/c92c67a0-7d88-406c-843d-8ae7d42bbd07" />
+Passes all of Pytest: 
 
-89%/90% Coverage: <img width="478" alt="image" src="https://github.com/user-attachments/assets/0780d693-3c4d-417c-8103-a8e817752eb1" />
+<img width="470" alt="image" src="https://github.com/user-attachments/assets/c92c67a0-7d88-406c-843d-8ae7d42bbd07" />
+
+89%/90% Coverage:
+
+<img width="478" alt="image" src="https://github.com/user-attachments/assets/0780d693-3c4d-417c-8103-a8e817752eb1" />
 
 
-Docker Image: <img width="959" alt="image" src="https://github.com/user-attachments/assets/69e8f95f-d332-4d0a-b5c0-f85ebba332a5" />
+Docker Image:
+
+<img width="959" alt="image" src="https://github.com/user-attachments/assets/69e8f95f-d332-4d0a-b5c0-f85ebba332a5" />
 
 
 ## New Feature: Profile Picture Upload with Minio
