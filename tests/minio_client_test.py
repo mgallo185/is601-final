@@ -23,7 +23,7 @@ def mock_minio_client():
 def mock_settings():
     """Fixture to mock the settings."""
     return {
-        "MINIO_ENDPOINT": "minio:9000",
+        "MINIO_ENDPOINT": "localhost:9000",
         "MINIO_BUCKET_NAME": "bucket_name",
         "MINIO_ACCESS_KEY": "test-access-key",
         "MINIO_SECRET_KEY": "test-secret-key",
