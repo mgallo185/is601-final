@@ -37,6 +37,8 @@ from app.utils.template_manager import TemplateManager
 from app.services.email_service import EmailService
 from app.services.jwt_service import create_access_token
 
+from minio import Minio
+
 fake = Faker()
 
 settings = get_settings()
@@ -45,6 +47,14 @@ engine = create_async_engine(TEST_DATABASE_URL, echo=settings.debug)
 AsyncTestingSessionLocal = sessionmaker(engine, class_=AsyncSession, expire_on_commit=False)
 AsyncSessionScoped = scoped_session(AsyncTestingSessionLocal)
 
+# Configure MinIO client
+@pytest.fixture
+def minio_client():
+    return Minio("minio:9000",  # Update this to match your host and port
+    access_key="minioadmin",  # Replace with your access key
+    secret_key="minioadmin",  # Replace with your secret key
+    secure=False  # Set to True if using HTTPS
+    )
 
 @pytest.fixture
 def email_service():
