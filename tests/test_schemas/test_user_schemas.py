@@ -122,11 +122,11 @@ def test_user_create_password_valid(password, user_create_data):
     assert user.password == password
 
 @pytest.mark.parametrize("password,error_msg", [
-    ("short1!", "Password must be at least 8 characters long."),
-    ("lowercase1!", "Password must contain at least one uppercase letter."),
-    ("UPPERCASE1!", "Password must contain at least one lowercase letter."),
-    ("NoDigits!", "Password must contain at least one digit."),
-    ("NoSpecial123", "Password must contain at least one special character.")
+    ("short1!", "Password must be at least 8 characters long"),
+    ("lowercase1!", "Password must contain at least one uppercase letter"),
+    ("UPPERCASE1!", "Password must contain at least one lowercase letter"),
+    ("NoDigits!", "Password must contain at least one digit"),
+    ("NoSpecial123", "Password must contain at least one special character")
 ])
 def test_user_create_password_invalid(password, error_msg, user_create_data):
     user_create_data["password"] = password
@@ -135,4 +135,15 @@ def test_user_create_password_invalid(password, error_msg, user_create_data):
     
     # Check that the validation error contains the expected error message
     error_details = exc_info.value.errors()
-    assert any(error_msg in error["msg"] for error in error_details)
+    
+    # Print the actual error messages for debugging
+    print(f"Actual errors: {[error['msg'] for error in error_details]}")
+    
+    # Check if any error message contains our expected error message (partial match)
+    found = False
+    for error in error_details:
+        if error_msg in error["msg"]:
+            found = True
+            break
+    
+    assert found, f"Expected error message '{error_msg}' not found in {[error['msg'] for error in error_details]}"
