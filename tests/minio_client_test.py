@@ -253,19 +253,3 @@ async def test_upload_large_image(test_user_id):
         # Verify result is a valid URL
         assert result is not None
         assert result.startswith("http://")
-
-# Integration test (requires actual MinIO server)
-@pytest.mark.skip(reason="Requires actual MinIO server")
-@pytest.mark.asyncio
-async def test_integration_upload(test_upload_file, test_user_id):
-    """Integration test with actual MinIO server (skipped by default)"""
-    # Reset the file pointer
-    test_upload_file.file.seek(0)
-    
-    # Call the upload function without mocking
-    result = await upload(test_upload_file, test_user_id)
-    
-    # Verify result is a valid URL
-    assert result is not None
-    assert result.startswith("http://")
-    assert str(test_user_id) in result
