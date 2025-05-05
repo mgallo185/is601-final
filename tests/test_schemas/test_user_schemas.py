@@ -122,11 +122,11 @@ def test_user_create_password_valid(password, user_create_data):
     assert user.password == password
 
 @pytest.mark.parametrize("password,error_msg", [
-    ("short1!", "Password must be at least 8 characters long."),
-    ("lowercase1!", "Password must contain at least one uppercase letter."),
-    ("UPPERCASE1!", "Password must contain at least one lowercase letter."),
-    ("NoDigits!", "Password must contain at least one digit."),
-    ("NoSpecial123", "Password must contain at least one special character.")
+    ("short1!", "String should have at least 8 characters."),
+    ("lowercase1!", "String should have at least one uppercase letter."),
+    ("UPPERCASE1!", "Password should have at least one lowercase letter."),
+    ("NoDigits!", "Password should have at least one digit."),
+    ("NoSpecial123", "Password should have at least one special character.")
 ])
 def test_user_create_password_invalid(password, error_msg, user_create_data):
     user_create_data["password"] = password
