@@ -249,6 +249,7 @@ def email_service():
         mock_service.send_verification_email.return_value = None
         mock_service.send_user_email.return_value = None
         return mock_service
+
 @pytest.fixture
 def unique_user_data():
     return {

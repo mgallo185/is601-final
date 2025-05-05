@@ -488,3 +488,5 @@ async def test_upload_handles_resize_errors():
             assert result is None
             # Verify MinIO client was not called
             mock_minio.fput_object.assert_not_called()
+            
+
