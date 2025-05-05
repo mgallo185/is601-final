@@ -178,3 +178,31 @@ async def test_unlock_user_account_incorrect_id(db_session):
     incorrect_user_id = "incorrect-id"
     unlocked = await UserService.unlock_user_account(db_session, incorrect_user_id)
     assert unlocked is False
+
+# Test that the first user in the system is automatically assigned the ADMIN role
+async def test_first_user_gets_admin_role(db_session, email_service, monkeypatch):
+    # Mock the is_first_user method to return True
+    original_is_first_user = UserService.is_first_user
+    
+    async def mock_is_first_user(*args, **kwargs):
+        return True
+    
+    monkeypatch.setattr(UserService, "is_first_user", mock_is_first_user)
+    
+    # Create a user without specifying role
+    user_data = {
+        "nickname": generate_nickname(),
+        "email": "first_user@example.com",
+        "password": "FirstUser123!"
+    }
+    
+    # Create the user
+    user = await UserService.create(db_session, user_data, email_service)
+    
+    # Restore the original method
+    monkeypatch.setattr(UserService, "is_first_user", original_is_first_user)
+    
+    # Assertions
+    assert user is not None
+    assert user.role == UserRole.ADMIN
+    assert user.email_verified is True  # First admin user should be auto-verified
