@@ -24,6 +24,18 @@ jobs:
         ports:
           - 5432:5432
         options: --health-cmd pg_isready --health-interval 10s --health-timeout 5s --health-retries 5
+      
+      # Add MinIO service for testing
+      minio:
+        image: bitnami/minio:latest
+        env:
+          MINIO_ROOT_USER: minioadmin
+          MINIO_ROOT_PASSWORD: minioadmin
+          MINIO_DEFAULT_BUCKETS: profiles:public
+        ports:
+          - 9000:9000
+          - 9001:9001
+    
     steps:
       - uses: actions/checkout@v4
       
@@ -47,10 +59,24 @@ jobs:
           
       - name: Run tests with Pytest
         env:
+          # Database settings
+          DATABASE_URL: postgresql+asyncpg://user:password@localhost:5432/myappdb
+          
+          # MinIO settings - make sure these match what your code is expecting
+          MINIO_HOST: localhost:9000
+          MINIO_ACCESS_KEY: minioadmin
+          MINIO_SECRET_KEY: minioadmin
+          MINIO_BUCKET_NAME: profiles
+          MINIO_SECURE: "false"
+          
+          # Legacy names in case your code is looking for these
           MINIO_ROOT_USER: minioadmin
           MINIO_ROOT_PASSWORD: minioadmin
-          DATABASE_URL: postgresql+asyncpg://user:password@localhost:5432/myappdb  # Configure the DATABASE_URL environment variable for tests
           MINIO_URL: http://localhost:9000
+          
+          # Additional test settings
+          SEND_REAL_MAIL: "false"
+          DEBUG: "true"
         run: pytest
 
   build-and-push-docker:
