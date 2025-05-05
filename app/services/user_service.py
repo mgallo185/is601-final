@@ -48,36 +48,64 @@ class UserService:
     @classmethod
     async def get_by_email(cls, session: AsyncSession, email: str) -> Optional[User]:
         return await cls._fetch_user(session, email=email)
+        
+    @classmethod
+    async def is_first_user(cls, session: AsyncSession) -> bool:
+        """
+        Check if this will be the first user in the system.
+        
+        :param session: The AsyncSession instance for database access.
+        :return: True if no users exist in the system, False otherwise.
+        """
+        count = await cls.count(session)
+        return count == 0
 
     @classmethod
     async def create(cls, session: AsyncSession, user_data: Dict[str, str], email_service: EmailService) -> Optional[User]:
         try:
+            # Check if the user is the first user
+            is_first_user = await cls.is_first_user(session)
+            logger.debug(f"is_first_user: {is_first_user}")  # Debug statement
+            if is_first_user:
+                user_data["role"] = UserRole.ADMIN.name  # Automatically assign ADMIN role
+            else:
+                # Set default role if not provided
+                user_data.setdefault("role", UserRole.AUTHENTICATED.name)
+            logger.debug(f"Assigned role: {user_data['role']}")
+            
             validated_data = UserCreate(**user_data).model_dump()
             existing_user = await cls.get_by_email(session, validated_data['email'])
             if existing_user:
                 logger.error("User with given email already exists.")
                 return None
+                
             validated_data['hashed_password'] = hash_password(validated_data.pop('password'))
             new_user = User(**validated_data)
+            
             #new_nickname = generate_nickname()
             new_nickname = user_data["nickname"]
             while await cls.get_by_nickname(session, new_nickname):
                 #new_nickname = generate_nickname()
                 new_nickname = user_data["nickname"]
             new_user.nickname = new_nickname
+            
+            # Set role based on what we determined earlier
+            new_user.role = UserRole[user_data["role"]]
             logger.info(f"User Role: {new_user.role}")
-            user_count = await cls.count(session)
-            new_user.role = UserRole.ADMIN if user_count == 0 else UserRole.ANONYMOUS            
+            
+            # First user (admin) gets auto-verified email
             if new_user.role == UserRole.ADMIN:
                 new_user.email_verified = True
-
             else:
                 new_user.verification_token = generate_verification_token()
-                
 
             session.add(new_user)
             await session.commit()
-            await email_service.send_verification_email(new_user)
+            
+            # Only send verification email for non-admin users
+            if new_user.role != UserRole.ADMIN:
+                await email_service.send_verification_email(new_user)
+                
             return new_user
         except ValidationError as e:
             logger.error(f"Validation error during user creation: {e}")
