@@ -32,11 +32,12 @@ Easy configuration through environment variables
 
 Key Aspects: 
 - API Endpoint Creation
-- Minio Integration
+- Minio Integration: Uses the minio Python SDK to upload images to a specified bucket.
 - User Profile Update
-- Upload, resize, and store user profile pictures
-- File Format Validation (.jpg, .jpeg, .png)
-
+- File Type Validation: Only .png, .jpg, and .jpeg extensions are accepted.
+- File Size Limit: Maximum upload size is 10MB.
+- Image Resizing: Uploaded images are resized to 200x200 pixels using the Pillow (PIL) library. EXIF orientation is respected.
+- Temporary File Handling: Uploaded files are temporarily saved and removed after successful upload.
 
 
 
@@ -44,25 +45,19 @@ Key Aspects:
 
 The following QA-related improvements and bug fixes were implemented:
 
- First registered user is automatically set as an Admin
-
- Email verification logic added during user creation
-
- Password validation with strength requirements (length, complexity)
-
- Unique constraints enforced on email and nickname
-
- Profile picture URL validation to ensure valid input
-
- Fixed issue where is_professional field was not updating
-
- Many additional bug fixes and code quality enhancements
-
-
-
+ 1. First registered user is automatically set as an Admin: https://github.com/mgallo185/is601-final/issues/5
+ 2. Email verification logic added during user creation: https://github.com/mgallo185/is601-final/issues/6
+ 3.  Password validation with strength requirements (length, complexity): https://github.com/mgallo185/is601-final/issues/9 
+ 4.   Unique constraints enforced on email and nickname: https://github.com/mgallo185/is601-final/issues/13
+ 5.    Profile picture URL validation to ensure valid input: https://github.com/mgallo185/is601-final/issues/17
+ 6. Fixed issue where is_professional field was not updating: https://github.com/mgallo185/is601-final/issues/15
 
 
 ## Test Cases
+
+Minio File Upload Tests: https://github.com/mgallo185/is601-final/issues/20
+Test cases: https://github.com/mgallo185/is601-final/issues/27
+
 
 
 ## How to Run Locally
