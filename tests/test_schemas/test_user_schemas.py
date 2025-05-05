@@ -108,3 +108,42 @@ def test_user_base_url_invalid(url, user_base_data):
     user_base_data["profile_picture_url"] = url
     with pytest.raises(ValidationError):
         UserBase(**user_base_data)
+
+@pytest.mark.parametrize("password", [
+    "Secure*1234",
+    "Complex!23",
+    "Ab1!defg",
+    "P@55w0rd",
+    "Very$ecure2023"
+])
+def test_user_create_password_valid(password, user_create_data):
+    user_create_data["password"] = password
+    user = UserCreate(**user_create_data)
+    assert user.password == password
+
+@pytest.mark.parametrize("password,error_msg", [
+    ("short1!", "String should have at least 8 characters"),
+    ("lowercase1!", "Password must contain at least one uppercase letter."),
+    ("UPPERCASE1!", "Password must contain at least one lowercase letter."),
+    ("NoDigits!", "Password must contain at least one digit."),
+    ("NoSpecial123", "Password must contain at least one special character.")
+])
+def test_user_create_password_invalid(password, error_msg, user_create_data):
+    user_create_data["password"] = password
+    with pytest.raises(ValidationError) as exc_info:
+        UserCreate(**user_create_data)
+    
+    # Check that the validation error contains the expected error message
+    error_details = exc_info.value.errors()
+    
+    # Print the actual error messages for debugging
+    print(f"Actual errors: {[error['msg'] for error in error_details]}")
+    
+    # Check if any error message contains our expected error message (partial match)
+    found = False
+    for error in error_details:
+        if error_msg in error["msg"]:
+            found = True
+            break
+    
+    assert found, f"Expected error message '{error_msg}' not found in {[error['msg'] for error in error_details]}"
