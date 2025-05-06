@@ -57,18 +57,65 @@ Key Aspects:
 The following QA-related improvements and bug fixes were implemented:
 
  1. First registered user is automatically set as an Admin: https://github.com/mgallo185/is601-final/issues/5
+
+    Fixed a race condition in the user creation process. The is_first_user method was vulnerable to concurrent requests, potentially allowing multiple "first users" to be created simultaneously. This could lead to privilege escalation issues since the first user is typically granted admin rights.
+    
+The fixed implementation properly checks the user count atomically before any new user creation, ensuring that only one user can ever be identified as the "first user" in the system, maintaining proper access control security.
+
  2. Email verification logic added during user creation: https://github.com/mgallo185/is601-final/issues/6
- 3.  Password validation with strength requirements (length, complexity): https://github.com/mgallo185/is601-final/issues/9 
+
+Moved sending verification email when the email is being sent to the user, so that the user can be created first and then sent the proper verification email that will have their id attached.
+
+
+ 3.  Password validation with strength requirements (length, complexity): https://github.com/mgallo185/is601-final/issues/9
+
+
+Implemented comprehensive password strength requirements across all authentication flows to improve system security. The new password validation enforces the following criteria:
+
+- Minimum length of 8 characters
+- At least one uppercase letter
+- At least one lowercase letter
+- At least one digit
+- At least one special character
+
+These requirements are now consistently applied in both the password creation flow for new accounts and the password reset functionality for existing users. This enhancement significantly reduces vulnerability to brute force attacks and ensures compliance with modern security standards.
+
+
  4.   Unique constraints enforced on email and nickname: https://github.com/mgallo185/is601-final/issues/13
- 5.    Profile picture URL validation to ensure valid input: https://github.com/mgallo185/is601-final/issues/17
+
+Resolved an issue where users could register with nicknames/usernames that were already taken in the database. This created confusion in user identification and potential security vulnerabilities with account impersonation.
+
+Implemented a proper uniqueness constraint on the nickname field in the database schema and added validation in the registration process to check for existing nicknames before account creation. When a user attempts to register with an already taken nickname, the system now returns a clear error message prompting them to choose a different one.
+
+
+
+
+ 5. Profile picture URL validation to ensure valid input: https://github.com/mgallo185/is601-final/issues/17
+
+
+Ensured the provided URL is well-formed and points to an image file by validating that it ends with standard image extensions
+such as .jpg, .jpeg or .png.
+
+Implemented robust URL validation mechanisms to ensure secure and valid profile picture uploads. This includes verifying that the URL is properly structured, ends with acceptable image file extensions, and optionally confirming the URL's accessibility and that it references a valid image resource.
+
+
  6. Fixed issue where is_professional field was not updating: https://github.com/mgallo185/is601-final/issues/15
+
+Added the is_professional field in the user schema. The is_professional field was added to both user_update and user_response schemas, ensuring proper data handling and seamless functionality for update
+
+7. Fixed Dockerfile and Workflows action file: https://github.com/mgallo185/is601-final/issues/3
+
+- Updated the Docker File to allow build.
+- Fixed the workflow action yml file to pass the build if the vulnerabilities are found. Adjusted workflow file for my own settings such as my docker repo and adding Minio Settings
+- Fixed the Application throwing error due to library version mismatch
+
+
+
 
 
 # Test Cases
 
-Minio File Upload Tests: https://github.com/mgallo185/is601-final/issues/20
-
-# MinIO Client Test Cases
+# MinIO Client Test Cases  https://github.com/mgallo185/is601-final/issues/20
 
 This file contains comprehensive test cases for a MinIO client utility that handles image upload functionality within a FastAPI application. Below is a summary of all test cases organized by the functions they test.
 
@@ -119,11 +166,9 @@ The test suite includes several fixtures to support testing:
 
 These tests ensure comprehensive coverage of the image upload functionality, including validation, resizing, and error handling scenarios.
 
-Test cases: https://github.com/mgallo185/is601-final/issues/27
 
-In the tests/conftest.py directory:
 
-## Test Fixtures
+## Test Fixtures  https://github.com/mgallo185/is601-final/issues/27
 
 Our testing relies on several key fixtures defined in `conftest.py`:
 
