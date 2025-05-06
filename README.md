@@ -2,29 +2,56 @@
 
 This project is a comprehensive User Management System designed as the final project for IS601. It includes core user functionalities such as registration, login, profile management, and admin controls. The system is containerized using Docker and includes support for image uploads via Minio.
 
-## Reflection Document
-https://github.com/mgallo185/is601-final/blob/main/IS%20601%20Reflection%20Doc.pdf
+## 🔗 Quick Links
+- [GitHub Repository](https://github.com/mgallo185/is601-final/)
+- [Docker Image](https://hub.docker.com/r/mgallo185/is601-final)
+- [Reflection Document](https://github.com/mgallo185/is601-final/blob/main/IS%20601%20Reflection%20Doc.pdf)
 
+## ✨ Features
 
+### Core Functionality
+- User registration with email verification
+- Secure authentication system
+- Profile management
+- Admin user controls
+- Role-based access control
 
-### Repository and Docker Image Links
-https://github.com/mgallo185/is601-final/
+### Profile Picture Upload with Minio
+Users can now upload profile pictures with the following features:
+- S3-compatible object storage via Minio
+- File type validation (.png, .jpg, .jpeg)
+- 10MB file size limit
+- Automatic image resizing to 200x200px
+- EXIF orientation preservation
 
-https://hub.docker.com/r/mgallo185/is601-final
+## 🚀 Installation & Setup
 
+### Prerequisites
+- Docker and Docker Compose
+- Python 3.9+
+- Git
 
-Screenshots:
+### Running Locally
+```bash
+# Clone the repository
+git clone https://github.com/mgallo185/is601-final.git
+cd is601-final
 
-Passes all of Pytest: 
+# Set up virtual environment
+python3 -m venv venv
+source venv/bin/activate  # On Windows: venv\Scripts\activate
+pip install -r requirements.txt
 
-<img width="470" alt="image" src="https://github.com/user-attachments/assets/c92c67a0-7d88-406c-843d-8ae7d42bbd07" />
+# Start the application with Docker
+docker-compose up --build
 
-89%/90% Coverage:
+# Run database migrations
+alembic upgrade head
 
-<img width="478" alt="image" src="https://github.com/user-attachments/assets/0780d693-3c4d-417c-8103-a8e817752eb1" />
-
-
-Docker Image:
+# Access the application
+# Open http://localhost/docs in your browser
+```
+### Docker Image:
 
 <img width="959" alt="image" src="https://github.com/user-attachments/assets/69e8f95f-d332-4d0a-b5c0-f85ebba332a5" />
 
@@ -52,7 +79,7 @@ Key Aspects:
 
 
 
-## QA Issues Resolved
+##  🛠️ QA Issues Resolved and Bug Fixes
 
 The following QA-related improvements and bug fixes were implemented:
 
@@ -114,6 +141,14 @@ Added the is_professional field in the user schema. The is_professional field wa
 
 
 # Test Cases
+
+Passes all of Pytest: 
+
+<img width="470" alt="image" src="https://github.com/user-attachments/assets/c92c67a0-7d88-406c-843d-8ae7d42bbd07" />
+
+89%/90% Coverage:
+
+<img width="478" alt="image" src="https://github.com/user-attachments/assets/0780d693-3c4d-417c-8103-a8e817752eb1" />
 
 # MinIO Client Test Cases  https://github.com/mgallo185/is601-final/issues/20
 
@@ -389,17 +424,10 @@ This ensures the system correctly implements the security policy where the first
 
 
 
-## How to Run Locally
+## 👥 Contributing
 
-```bash
+Contributions are welcome! Please feel free to submit a Pull Request.
 
-git clone https://github.com/mgallo185/is601-final.git
-cd is601-final
-python3 -m venv venv
-source venv/bin/activate
-pip install -r requirements.txt
-docker-compose up --build
-alembic upgrade head
-http://localhost/docs
+## 📄 License
 
-```
+[MIT](https://choosealicense.com/licenses/mit/)
