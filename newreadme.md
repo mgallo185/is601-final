@@ -3,7 +3,8 @@
 This project is a comprehensive User Management System designed as the final project for IS601. It includes core user functionalities such as registration, login, profile management, and admin controls. The system is containerized using Docker and includes support for image uploads via Minio.
 
 ## Reflection Document
-IS 601 Reflection Doc.pdf
+https://github.com/mgallo185/is601-final/blob/main/IS%20601%20Reflection%20Doc.pdf
+
 
 
 ### Repository and Docker Image Links
