@@ -67,7 +67,33 @@ The following QA-related improvements and bug fixes were implemented:
 ## Test Cases
 
 Minio File Upload Tests: https://github.com/mgallo185/is601-final/issues/20
+
+- test_jpg_image
+- test_png_image
+- test_invalid_file
+- test_upload_file
+- test_transparent_png
+- test_allowed_file
+- test_resize_image_png_with_transparency
+- test_resize_image
+- test_upload_valid_image
+- test_upload_invalid_filetype
+- test_upload_no_minio_client
+- test_upload_large_image
+- test_allowed_file_case_insesitive
+- test_upload_file_size_limit
+
 Test cases: https://github.com/mgallo185/is601-final/issues/27
+
+- test_bulk_user_creation_performance
+- test_current_user_error
+- test_user_create_password_valid
+- test_user_create_password_invalid
+- test_first_user_gets_admin_role
+- test_update_non_existent_user
+- test_unlock_user_account_incorrect_id
+- test_update_non_existent_user
+
 
 
 
